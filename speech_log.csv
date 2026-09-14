@@ -1,0 +1,97 @@
+timestamp,raw_text,command,match_reason
+2026-09-14T16:14:57,hello,hello,keyword match
+2026-09-14T16:16:07,hello,hello,keyword match
+2026-09-14T16:16:12,do me wine,,no match
+2026-09-14T16:16:16,do me share in wine,,no match
+2026-09-14T16:16:19,do mention wine,mission_1,fuzzy match -> 'do mission one'
+2026-09-14T16:16:29,do mission said wine,mission_1,fuzzy match -> 'do mission one'
+2026-09-14T16:16:33,do mission to,mission_3,fuzzy match -> 'do mission 3'
+2026-09-14T16:16:37,do me sent to,,no match
+2026-09-14T16:16:42,doom is and three,mission_3,fuzzy match -> 'do mission three'
+2026-09-14T16:16:46,doom and sent three,mission_3,fuzzy match -> 'do mission three'
+2026-09-14T16:16:50,do mission wine,mission_1,fuzzy match -> 'do mission one'
+2026-09-14T16:16:52,hello,hello,keyword match
+2026-09-14T16:17:06,hello,hello,keyword match
+2026-09-14T16:17:46,hello,hello,keyword match
+2026-09-14T16:17:53,hello,hello,keyword match
+2026-09-14T16:18:31,hello,hello,keyword match
+2026-09-14T16:19:03,hello,hello,keyword match
+2026-09-14T16:19:28,who,,no match
+2026-09-14T16:19:32,hello,hello,keyword match
+2026-09-14T16:19:51,no,,no match
+2026-09-14T16:19:57,they act been overlooked,,no match
+2026-09-14T16:20:00,hello,hello,keyword match
+2026-09-14T16:20:04,where did that it played have pretended he play,,no match
+2026-09-14T16:20:09,hello,hello,keyword match
+2026-09-14T16:20:12,i do,,no match
+2026-09-14T16:20:14,yup,,no match
+2026-09-14T16:20:22,not been yet,,no match
+2026-09-14T16:20:38,hello,hello,keyword match
+2026-09-14T16:20:43,word,,no match
+2026-09-14T16:20:58,hello,hello,keyword match
+2026-09-14T16:21:24,hello,hello,keyword match
+2026-09-14T16:23:21,hello,hello,keyword match
+2026-09-14T16:23:27,do me kenwyne,,no match
+2026-09-14T16:23:34,do me said wine,,no match
+2026-09-14T16:23:41,mission when,mission_3,fuzzy match -> 'mission three'
+2026-09-14T16:23:45,within three,mission_3,fuzzy match -> 'mission three'
+2026-09-14T16:23:47,i mean said wine,,no match
+2026-09-14T16:23:50,wine,,no match
+2026-09-14T16:23:53,michigan,,no match
+2026-09-14T16:23:55,one,,no match
+2026-09-14T16:23:58,mission one,mission_1,keyword match (number word 'one')
+2026-09-14T16:26:56,we're getting a wouldn't do is for us,,no match
+2026-09-14T16:27:07,determine their luggage and youth the amro,,no match
+2026-09-14T16:27:12,i u n one no more no less yen,,no match
+2026-09-14T16:27:22,the bug to view him,,no match
+2026-09-14T16:27:27,he's dead or even bigger,,no match
+2026-09-14T16:27:30,it isn't the way the way it over the owning,,no match
+2026-09-14T16:27:43,he elements yin,,no match
+2026-09-14T16:27:48,nothing on me,,no match
+2026-09-14T16:28:21,vincent,,no match
+2026-09-14T16:28:23,i wouldn't,,no match
+2026-09-14T16:28:26,no fucks go far,,no match
+2026-09-14T16:28:28,this will about you,,no match
+2026-09-14T16:28:33,so,,no match
+2026-09-14T16:33:47,hello,hello,keyword match
+2026-09-14T16:33:51,do me fine wine,,no match
+2026-09-14T16:33:55,do me said wine,,no match
+2026-09-14T16:33:58,doom he said one,,no match
+2026-09-14T16:34:04,do me here and wine,,no match
+2026-09-14T16:34:08,do a mission to,Do Mission Three,fuzzy match -> 'do mission 3'
+2026-09-14T16:34:14,do we do,,no match
+2026-09-14T16:34:17,doom is and three,Do Mission Three,fuzzy match -> 'do mission three'
+2026-09-14T16:34:22,do me share three,Do Mission Three,fuzzy match -> 'do mission three'
+2026-09-14T16:34:42,hello,hello,keyword match
+2026-09-14T16:34:47,do me shared wine,,no match
+2026-09-14T16:34:52,do me share and wine,,no match
+2026-09-14T16:34:59,do mission one,Do Mission One,keyword match (number word 'one')
+2026-09-14T16:35:09,one,,no match
+2026-09-14T16:35:25,hello,hello,keyword match
+2026-09-14T16:35:30,do mission one,Do Mission One,keyword match (number word 'one')
+2026-09-14T16:35:45,these,,no match
+2026-09-14T16:35:50,whoa,,no match
+2026-09-14T16:35:53,that i work better with that,,no match
+2026-09-14T16:35:58,that it though missing one,Do Mission One,fuzzy match -> 'start mission one'
+2026-09-14T16:36:09,hello,hello,keyword match
+2026-09-14T16:36:14,do mission one,Do Mission One,keyword match (number word 'one')
+2026-09-14T16:37:04,doctor it ended in general i do say,,no match
+2026-09-14T16:37:39,don't know when you know,,no match
+2026-09-14T16:37:41,lucy noon,,no match
+2026-09-14T16:37:43,my filipino younger,,no match
+2026-09-14T16:37:53,added,,no match
+2026-09-14T16:38:05,the even relate to win,,no match
+2026-09-14T16:38:08,wrangler nearby on,,no match
+2026-09-14T16:38:14,earlier and josh,,no match
+2026-09-14T16:38:16,that people have a little good,,no match
+2026-09-14T16:38:18,i got them in an interview,,no match
+2026-09-14T16:38:23,oh are graduates yeah,,no match
+2026-09-14T16:38:26,the could be noted that against that him,,no match
+2026-09-14T16:38:31,if it's best at him either get they're gonna get them too late august that,,no match
+2026-09-14T16:39:21,hello,hello,keyword match
+2026-09-14T16:39:25,do me shen wine,Do Mission One,fuzzy match -> 'do mission one'
+2026-09-14T16:41:41,we're well in booger,,no match
+2026-09-14T16:44:35,hello,hello,keyword match
+2026-09-14T16:44:47,in roof,hello,fuzzy match -> 'hi robot'
+2026-09-14T16:45:04,hello,hello,keyword match
+2026-09-14T16:45:10,do mission to,Do Mission Two,keyword match (number word 'to')
