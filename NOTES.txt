@@ -1,0 +1,115 @@
+LIMO VOICE COMMAND - PROJECT NOTES
+====================================
+
+FILES
+-----
+windows_voice_client.py  - console client: mic -> Vosk -> match -> Node-RED
+voice_dashboard.py       - PyQt6 GUI wrapper around windows_voice_client.py
+list_mics.py             - standalone mic listing helper
+speech_log.csv           - every recognized phrase, auto-logged for analysis
+vosk-model-small-en-us-0.15/ - offline speech model (see SPEECH RECOGNITION below)
+
+
+SETUP
+-----
+Install deps (Windows cmd/PowerShell, NOT WSL):
+    pip install vosk websockets sounddevice
+    pip install PyQt6          (only needed for voice_dashboard.py)
+
+Vosk needs a model folder next to the scripts. Download one from
+https://alphacephei.com/vosk/models - the small English model
+"vosk-model-small-en-us-0.15" (~40MB) is what this project uses. Unzip it
+so you end up with:
+    LIMO Voice Command/vosk-model-small-en-us-0.15/...
+Change MODEL_PATH in windows_voice_client.py if you rename the folder or
+use a different language's model.
+
+Run:
+    python windows_voice_client.py             (console version)
+    python windows_voice_client.py --list-devices  (find your mic's index)
+    python voice_dashboard.py                   (GUI version)
+
+
+AUDIO BACKEND
+-------------
+Uses `sounddevice` instead of PyAudio. PyAudio has no prebuilt wheel for
+brand-new Python versions and building it from source on Windows needs
+compiler tooling most people don't have. sounddevice ships ready-made
+wheels, so nothing needs compiling.
+
+
+SPEECH RECOGNITION
+-------------------
+Uses `vosk` (offline, streaming) instead of Google's Web Speech API.
+Vosk decodes audio locally as it arrives, so it can report PARTIAL
+results continuously (what it thinks you're saying so far, updates
+live) instead of one final answer after you stop talking - that's what
+powers the live caption in both the console and the dashboard. It also
+removes the network round-trip that used to be the main source of lag.
+
+
+HOW COMMAND MATCHING WORKS (match_command in windows_voice_client.py)
+-----------------------------------------------------------------------
+Speech recognition is never perfect, so matching does NOT rely on an
+exact string:
+  1. Normalize the text (lowercase, strip punctuation/filler words)
+  2. Check a synonym/misheard-word table (NUMBER_SYNONYMS - e.g.
+     "won"/"juan"/"wine"/"1" all mean the digit "1")
+  3. Fall back to fuzzy string matching (difflib) against known
+     phrasings (CANONICAL_PHRASES), so near-misses still match
+
+Command codes sent to Node-RED (msg.payload.command) must match the
+competition rubric exactly: hello / Do Mission One / Do Mission Two /
+Do Mission Three. Keep CANONICAL_PHRASES's dict keys and your Node-RED
+switch node's rule values in sync if you ever change these strings.
+
+Payload shape sent over the websocket:
+    {"command": "Do Mission One", "raw_text": "do mishun one", "source": "muaz-pc"}
+
+
+CALIBRATION HISTORY (from analyzing speech_log.csv)
+-----------------------------------------------------
+- BUG (fixed): "to" was in FILLER_WORDS, so it got stripped before the
+  number-check ever ran - but "to" is also the digit-2 synonym. This
+  caused "do mission to" to silently lose its number and fall through
+  to a near-random fuzzy match (it once landed on mission 3). "to" was
+  removed from FILLER_WORDS to fix this. Do not re-add it there.
+- "mission" almost never survives transcription intact on the small
+  Vosk model - it comes back as "me", "doom", "mention", etc. The
+  match_command() gate now also accepts anything starting with "do"
+  (every real command starts that way), not just literal "mission".
+- "one" is very consistently misheard as "wine" - added "wine" to
+  NUMBER_SYNONYMS["1"].
+- Replaying the whole log through match_command() after these fixes
+  raised the match rate from 37/92 to 47/92 with zero regressions on
+  previously-correct matches, and no new false positives on unrelated
+  chatter.
+- Known limitation: "to" is ambiguous between an attempted "two" and a
+  garbled "three" - there's no way to tell from text alone which the
+  speaker meant. If mission-2/3 mis-routes keep happening, check
+  speech_log.csv for the actual pattern before changing NUMBER_SYNONYMS.
+- Keep using speech_log.csv: whenever you notice a recurring
+  mis-hearing, add it to NUMBER_SYNONYMS or CANONICAL_PHRASES in
+  windows_voice_client.py.
+
+
+MICROPHONE SELECTION
+---------------------
+Run `python windows_voice_client.py --list-devices` to see the index/name
+list for your machine (indices can shift after Windows updates or
+plugging things in/out). Avoid "Stereo Mix" (that's speaker output, not
+a mic) and duplicate "Steam Streaming Microphone" entries unless you're
+actually using Steam's virtual mic. Set MIC_DEVICE_INDEX in the CONFIG
+section of windows_voice_client.py (or pick it from the dropdown in the
+dashboard).
+
+
+DASHBOARD ARCHITECTURE (voice_dashboard.py)
+----------------------------------------------
+The voice/network pipeline runs on a background QThread (VoiceWorker)
+that drives the same asyncio code as the console client, reporting back
+to the GUI only through Qt signals - Qt widgets must only ever be
+touched from the main thread, so nothing in VoiceWorker calls into the
+UI directly. Stop works by setting an asyncio.Event that _send_loop
+polls for via a 0.2s timeout on next_result(), rather than blocking
+forever.

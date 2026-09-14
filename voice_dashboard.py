@@ -1,29 +1,12 @@
 #!/usr/bin/env python3
 """
 voice_dashboard.py
--------------------
-PyQt6 GUI wrapper around windows_voice_client.py.
 
-All the actual speech logic (Vosk live transcription, command matching,
-CSV logging, Node-RED websocket send) lives in windows_voice_client.py
-and is unchanged -- this file just gives it a dashboard:
+PyQt6 GUI wrapper around windows_voice_client.py. See NOTES.txt for
+architecture notes (why the voice pipeline runs on a QThread, etc).
 
-    - Connection status (connecting / connected / retrying)
-    - Live captions while you're still talking
-    - The last recognized command, in large text
-    - A running history table of everything heard, matched, and sent
-    - Editable Node-RED IP/port/path and mic device, from the UI
-
-The voice/network work runs on a background QThread (VoiceWorker) that
-drives windows_voice_client's asyncio code and reports back to the GUI
-thread via Qt signals -- Qt widgets must only ever be touched from the
-main thread, so nothing in VoiceWorker calls into the UI directly.
-
-Install deps (Windows cmd/PowerShell, NOT WSL):
-    pip install vosk websockets sounddevice PyQt6
-
-Run:
-    python voice_dashboard.py
+Install: pip install vosk websockets sounddevice PyQt6
+Run:     python voice_dashboard.py
 """
 
 import asyncio
@@ -58,15 +41,11 @@ import windows_voice_client as vc
 
 
 class VoiceWorker(QThread):
-    """
-    Runs the capture -> transcribe -> match -> send pipeline on a
-    background thread so the GUI stays responsive. Talks back to the
-    GUI only through these signals.
-    """
+    """Runs the voice pipeline on a background thread; reports via Qt signals."""
 
-    status_changed = pyqtSignal(str, str)         # message, level: "ok"/"warn"/"error"
-    partial_ready = pyqtSignal(str)                # live in-progress caption
-    final_ready = pyqtSignal(str, str, str)        # raw_text, command ("" if none), reason
+    status_changed = pyqtSignal(str, str)
+    partial_ready = pyqtSignal(str)
+    final_ready = pyqtSignal(str, str, str)
 
     def __init__(self, ws_url: str, mic_device_index, parent=None):
         super().__init__(parent)
@@ -76,7 +55,6 @@ class VoiceWorker(QThread):
         self._stop_event = None
 
     def stop(self):
-        """Thread-safe: ask the worker's asyncio loop to shut down."""
         if self._loop is not None and self._stop_event is not None:
             self._loop.call_soon_threadsafe(self._stop_event.set)
 
@@ -126,7 +104,6 @@ class VoiceWorker(QThread):
 
         with transcriber.stream():
             while not self._stop_event.is_set():
-                # 0.2s timeout so we periodically notice _stop_event was set
                 result = await loop.run_in_executor(None, transcriber.next_result, 0.2)
                 if result is None:
                     continue
@@ -138,7 +115,6 @@ class VoiceWorker(QThread):
                         self.partial_ready.emit(text)
                     continue
 
-                # kind == "final"
                 last_partial = ""
                 self.partial_ready.emit("")
                 if not text:
@@ -185,8 +161,6 @@ class DashboardWindow(QMainWindow):
         layout.addWidget(self._build_history_box(), stretch=1)
 
         self._populate_mic_devices()
-
-    # ---- UI construction -------------------------------------------------
 
     def _build_config_box(self) -> QGroupBox:
         box = QGroupBox("Connection")
@@ -268,8 +242,6 @@ class DashboardWindow(QMainWindow):
             if index == vc.MIC_DEVICE_INDEX:
                 self.mic_combo.setCurrentIndex(self.mic_combo.count() - 1)
 
-    # ---- start/stop --------------------------------------------------
-
     def _on_start(self):
         ws_url = f"ws://{self.ip_edit.text().strip()}:{self.port_spin.value()}{self.path_edit.text().strip()}"
         mic_index = self.mic_combo.currentData()
@@ -302,8 +274,6 @@ class DashboardWindow(QMainWindow):
         self.mic_combo.setEnabled(True)
         self.worker = None
 
-    # ---- signal handlers ----------------------------------------------
-
     def _on_status_changed(self, message: str, level: str):
         color = STATUS_COLORS.get(level, "#616161")
         self.status_label.setStyleSheet(f"font-weight: bold; color: {color};")
@@ -325,10 +295,7 @@ class DashboardWindow(QMainWindow):
         self.history_table.setItem(row, 0, QTableWidgetItem(datetime.now().strftime("%H:%M:%S")))
         self.history_table.setItem(row, 1, QTableWidgetItem(raw_text))
         command_item = QTableWidgetItem(display_command)
-        if command:
-            command_item.setForeground(QColor("#2e7d32"))
-        else:
-            command_item.setForeground(QColor("#c62828"))
+        command_item.setForeground(QColor("#2e7d32" if command else "#c62828"))
         self.history_table.setItem(row, 2, command_item)
         self.history_table.setItem(row, 3, QTableWidgetItem(reason))
 
