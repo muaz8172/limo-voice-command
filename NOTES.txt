@@ -64,7 +64,7 @@ Do Mission Three. Keep CANONICAL_PHRASES's dict keys and your Node-RED
 switch node's rule values in sync if you ever change these strings.
 
 Payload shape sent over the websocket:
-    {"command": "Do Mission One", "raw_text": "do mishun one", "source": "muaz-pc"}
+    {"command": "Do Mission One", "raw_text": "do mishun one", "source": "voice-client"}
 
 
 CALIBRATION HISTORY (from analyzing speech_log.csv)

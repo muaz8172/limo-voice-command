@@ -24,10 +24,17 @@ mic -> Vosk (live transcription) -> command matcher -> websocket -> Node-RED
 
 ## Requirements
 
+**Voice client (this repo):**
 - Windows, Python 3.9+
 - A working microphone
 - A Node-RED instance reachable on the network, with a websocket-in node
   (see [Node-RED side](#node-red-side))
+
+**Robot side:**
+- LIMO robot running Ubuntu 22.04 with ROS 2 Humble (tested on a Jetson
+  Orin Nano)
+- Node-RED installed on the robot (or on a machine that can reach both the
+  robot and the voice client over the network)
 
 ## Setup
 
@@ -44,15 +51,24 @@ mic -> Vosk (live transcription) -> command matcher -> websocket -> Node-RED
    ```
    python windows_voice_client.py --list-devices
    ```
-4. Edit the `CONFIG` section at the top of `windows_voice_client.py` for
-   your setup:
+4. Configure the connection for your setup — either edit the `CONFIG`
+   section at the top of `windows_voice_client.py`, or set environment
+   variables (useful for keeping your own IP/hostnames out of the file
+   you commit):
 
-   | Setting | Purpose | Default |
-   |---|---|---|
-   | `NODE_RED_IP` | IP address of the Node-RED host | `10.21.215.131` |
-   | `PORT` | Node-RED websocket port | `1880` |
-   | `PATH` | Websocket path Node-RED listens on | `/voice/muaz` |
-   | `MIC_DEVICE_INDEX` | Index from `--list-devices` | `1` |
+   | Setting | Env var override | Purpose | Default |
+   |---|---|---|---|
+   | `NODE_RED_IP` | `LIMO_NODE_RED_IP` | IP address of the Node-RED host | `192.168.1.100` |
+   | `PORT` | `LIMO_NODE_RED_PORT` | Node-RED websocket port | `1880` |
+   | `PATH` | `LIMO_NODE_RED_PATH` | Websocket path Node-RED listens on | `/voice/limo` |
+   | `SOURCE_NAME` | `LIMO_SOURCE_NAME` | Identifier sent with each command | `voice-client` |
+   | `MIC_DEVICE_INDEX` | — | Index from `--list-devices` | `1` |
+
+   Example (PowerShell):
+   ```
+   $env:LIMO_NODE_RED_IP = "192.168.1.50"
+   python windows_voice_client.py
+   ```
 
 ## Usage
 
@@ -89,7 +105,7 @@ Each recognized phrase is sent to Node-RED as JSON:
   "command": "Do Mission One",
   "raw_text": "do mishun one",
   "match_reason": "keyword match (number word 'one')",
-  "source": "muaz-pc"
+  "source": "voice-client"
 }
 ```
 If nothing matches, `command` is sent as `null` (unless `SEND_UNMATCHED` is
@@ -110,7 +126,7 @@ at all).
 ## Node-RED side
 
 Your Node-RED flow should have a websocket-in node listening on the path
-configured in `PATH` (default `/voice/muaz`), feeding a switch node that
+configured in `PATH` (default `/voice/limo`), feeding a switch node that
 checks `msg.payload.command` against the exact strings: `hello`,
 `Do Mission One`, `Do Mission Two`, `Do Mission Three`.
 

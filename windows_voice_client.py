@@ -21,10 +21,13 @@ import vosk
 import websockets
 
 # ---- CONFIG ---------------------------------------------------------
-NODE_RED_IP = "10.21.215.131"
-PORT = 1880
-PATH = "/voice/muaz"
-SOURCE_NAME = "muaz-pc"
+# Override any of these with environment variables instead of editing the
+# file directly, e.g.:
+#   set LIMO_NODE_RED_IP=192.168.1.50
+NODE_RED_IP = os.environ.get("LIMO_NODE_RED_IP", "192.168.1.100")
+PORT = int(os.environ.get("LIMO_NODE_RED_PORT", "1880"))
+PATH = os.environ.get("LIMO_NODE_RED_PATH", "/voice/limo")
+SOURCE_NAME = os.environ.get("LIMO_SOURCE_NAME", "voice-client")
 RECONNECT_DELAY_SEC = 3
 
 MODEL_PATH = "vosk-model-small-en-us-0.15"
